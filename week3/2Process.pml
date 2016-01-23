@@ -16,5 +16,5 @@ active [2] proctype P()
 active proctype WaitForFinish() {
 	finish == 2;
 	printf("n = %d\n", n);
-	assert(3<=n);
+	assert(2<=n && n <= 20);
 }

@@ -1,1 +1,1 @@
-init { printf("helloworld\n"); }
+1init { printf("helloworld\n"); }

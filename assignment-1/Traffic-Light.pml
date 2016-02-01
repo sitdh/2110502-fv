@@ -1,37 +1,86 @@
-int RLight = 0
-int YLight = 0
-int GLight = 0
+#define ON	1
+#define OFF 0
 
-proctype TrafficLight() 
+int NS_RED_LIGHT	= OFF
+int NS_YELLOW_LIGHT	= OFF
+int NS_GREEN_LIGHT	= OFF
+
+int WE_RED_LIGHT	= OFF
+int WE_YELLOW_LIGHT	= OFF
+int WE_GREEN_LIGHT	= ON
+
+proctype northSouthLane(chan lightSync) 
 {
-	int t = 1;
+	do
+red:	:: NS_RED_LIGHT == ON ->
+			atomic {
+				NS_RED_LIGHT	= OFF
+				NS_YELLOW_LIGHT	= ON
+				NS_GREEN_LIGHT	= OFF
+			}
 
-	S0: goto SR
+			lightSync ! NS_RED_LIGHT, NS_YELLOW_LIGHT, NS_GREEN_LIGHT
+			goto green;
 
-	SR: do
-		::(t==1)-> t = 0; 
-		::RLight = 1
-		::YLight = 0
-		::GLight = 0
-		::t = 1
-		od;
-		goto SG
+green: :: NS_YELLOW_LIGHT == ON ->
 
-	SG: do
-		::(t==1)-> t = 0; 
-		::RLight = 0
-		::YLight = 1
-		::GLight = 0
-		::t = 1
-		od;
-		goto SY
+			atomic {
+				NS_RED_LIGHT	= OFF
+				NS_YELLOW_LIGHT	= OFF
+				NS_GREEN_LIGHT	= ON
+			}
 
-	SY: do
-		::(t==1)-> t = 0; 
-		::RLight = 0
-		::YLight = 0
-		::GLight = 1
-		::t=1
-		od;
-		goto S0
+			lightSync ! NS_RED_LIGHT, NS_YELLOW_LIGHT, NS_GREEN_LIGHT
+			goto yellow;
+
+yellow:	:: NS_GREEN_LIGHT == ON ->
+
+			atomic {
+				NS_RED_LIGHT	= OFF
+				NS_YELLOW_LIGHT	= OFF
+				NS_GREEN_LIGHT	= ON
+			}
+
+			lightSync ! NS_RED_LIGHT, NS_YELLOW_LIGHT, NS_GREEN_LIGHT
+			goto red;
+	od
+
+}
+
+proctype weastEastLane(chan lightSync) 
+{
+	lightSync ? WE_RED_LIGHT, WE_YELLOW_LIGHT, WE_GREEN_LIGHT;
+
+	do
+		:: WE_RED_LIGHT == ON ->
+			atomic {
+				WE_RED_LIGHT	= OFF
+				WE_YELLOW_LIGHT	= ON
+				WE_GREEN_LIGHT	= OFF
+			}
+		:: WE_GREEN_LIGHT == ON ->
+			atomic {
+				WE_RED_LIGHT	= OFF
+				WE_YELLOW_LIGHT	= OFF
+				WE_GREEN_LIGHT	= ON
+			}
+		:: WE_YELLOW_LIGHT == ON ->
+			atomic {
+				WE_RED_LIGHT	= OFF
+				WE_YELLOW_LIGHT	= OFF
+				WE_GREEN_LIGHT	= ON
+			}
+	od
+}
+
+active proctype AssertInvariant() 
+{
+	assert( WE_RED_LIGHT == NS_GREEN_LIGHT )
+	assert( WE_GREEN_LIGHT != NS_GREEN_LIGHT )
+}
+
+init {
+	chan lightSync = [3] of {bit, bit, bit}
+	run northSouthLane(lightSync)
+	run weastEastLane(lightSync)
 }

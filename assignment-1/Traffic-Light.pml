@@ -74,19 +74,4 @@ active proctype AssertInvariant()
 		( NS_GREEN_LIGHT <> ON )
 	)
 
-	/**
-	assert( 
-		(NS_RED_LIGHT <> NS_GREEN_LIGHT) 
-		OR 
-		(NS_YELLOW_LIGHT <> NS_GREEN_LIGHT) 
-		OR 
-		(NS_RED_LIGHT <> NS_YELLOW_LIGHT) 
-	)
-
-	assert(
-		NS_RED_LIGHT == NS_GREEN_LIGHT
-		AND
-		NS_RED_LIGHT <> ON
-	)
-	**/
 }

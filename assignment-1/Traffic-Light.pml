@@ -5,7 +5,7 @@ int RED_LIGHT		= ON
 int YELLOW_LIGHT	= OFF
 int GREEN_LIGHT		= OFF
 
-active proctype northSouthLane() 
+active proctype trafficLight() 
 {
 red:	( ( RED_LIGHT == YELLOW_LIGHT ) AND ( YELLOW_LIGHT == GREEN_LIGHT ) AND ( RED_LIGHT == OFF ) ) OR ( GREEN_LIGHT == ON ) ->
 			atomic {

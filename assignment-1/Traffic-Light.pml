@@ -1,20 +1,31 @@
 #define ON	1
 #define OFF 0
 
-int RED_LIGHT		= ON
+int RED_LIGHT		= OFF
 int YELLOW_LIGHT	= OFF
 int GREEN_LIGHT		= OFF
 
 active proctype trafficLight() 
 {
-red:	( ( RED_LIGHT == YELLOW_LIGHT ) AND ( YELLOW_LIGHT == GREEN_LIGHT ) AND ( RED_LIGHT == OFF ) ) OR ( GREEN_LIGHT == ON ) ->
+
+	atomic {
+		RED_LIGHT		= ON
+		YELLOW_LIGHT	= OFF
+		GREEN_LIGHT		= OFF
+		assert( RED_LIGHT == ON )
+		goto yellow;
+	}
+
+red: GREEN_LIGHT == ON -> 
 			atomic {
 				RED_LIGHT		= ON
 				YELLOW_LIGHT	= OFF
 				GREEN_LIGHT		= OFF
 			}
+
 			assert( GREEN_LIGHT == OFF )
 			assert( RED_LIGHT == ON )
+
 			goto yellow;
 
 yellow: RED_LIGHT == ON ->
@@ -25,16 +36,19 @@ yellow: RED_LIGHT == ON ->
 			}
 			assert( RED_LIGHT == OFF )
 			assert( YELLOW_LIGHT == ON )
-			goto yellow;
+			goto green;
 
 green:	YELLOW_LIGHT == ON ->
+
 			atomic {
 				RED_LIGHT		= OFF 
 				YELLOW_LIGHT	= OFF
 				GREEN_LIGHT		= ON
 			}
+
 			assert( YELLOW_LIGHT == OFF )
 			assert( GREEN_LIGHT == ON )
+
 			goto red;
 }
 

@@ -1,40 +1,40 @@
 #define ON	1
 #define OFF 0
 
-int NS_RED_LIGHT	= ON
-int NS_YELLOW_LIGHT	= OFF
-int NS_GREEN_LIGHT	= OFF
+int RED_LIGHT		= ON
+int YELLOW_LIGHT	= OFF
+int GREEN_LIGHT		= OFF
 
 active proctype northSouthLane() 
 {
-red:	NS_RED_LIGHT == ON ->
+red:	( ( RED_LIGHT == YELLOW_LIGHT ) AND ( YELLOW_LIGHT == GREEN_LIGHT ) AND ( RED_LIGHT == OFF ) ) OR ( GREEN_LIGHT == ON ) ->
 			atomic {
-				NS_RED_LIGHT	= OFF
-				NS_YELLOW_LIGHT	= ON
-				NS_GREEN_LIGHT	= OFF
+				RED_LIGHT		= ON
+				YELLOW_LIGHT	= OFF
+				GREEN_LIGHT		= OFF
 			}
-			assert( NS_RED_LIGHT == OFF )
-			assert( NS_YELLOW_LIGHT == ON )
-			goto green;
-
-green: NS_YELLOW_LIGHT == ON ->
-			atomic {
-				NS_RED_LIGHT	= OFF
-				NS_YELLOW_LIGHT	= OFF
-				NS_GREEN_LIGHT	= ON
-			}
-			assert( NS_YELLOW_LIGHT == OFF )
-			assert( NS_GREEN_LIGHT == ON )
+			assert( GREEN_LIGHT == OFF )
+			assert( RED_LIGHT == ON )
 			goto yellow;
 
-yellow:	NS_GREEN_LIGHT == ON ->
+yellow: RED_LIGHT == ON ->
 			atomic {
-				NS_RED_LIGHT	= ON 
-				NS_YELLOW_LIGHT	= OFF
-				NS_GREEN_LIGHT	= OFF
+				RED_LIGHT		= OFF
+				YELLOW_LIGHT	= ON
+				GREEN_LIGHT		= OFF
 			}
-			assert( NS_GREEN_LIGHT == OFF )
-			assert( NS_RED_LIGHT == ON )
+			assert( RED_LIGHT == OFF )
+			assert( YELLOW_LIGHT == ON )
+			goto yellow;
+
+green:	YELLOW_LIGHT == ON ->
+			atomic {
+				RED_LIGHT		= OFF 
+				YELLOW_LIGHT	= OFF
+				GREEN_LIGHT		= ON
+			}
+			assert( YELLOW_LIGHT == OFF )
+			assert( GREEN_LIGHT == ON )
 			goto red;
 }
 
@@ -44,11 +44,11 @@ active proctype AssertInvariant()
 	 * All Traffic light could not turn on at once
 	 **/
 	assert(
-		( NS_RED_LIGHT <> NS_GREEN_LIGHT )
+		( RED_LIGHT <> GREEN_LIGHT )
 		OR	
-		( NS_RED_LIGHT <> NS_YELLOW_LIGHT )
+		( RED_LIGHT <> YELLOW_LIGHT )
 		OR	
-		( NS_YELLOW_LIGHT <> ON )
+		( YELLOW_LIGHT <> ON )
 	)
 
 	/**
@@ -57,27 +57,27 @@ active proctype AssertInvariant()
 	 * Red and Yellow
 	 **/
 	assert(
-		( NS_RED_LIGHT <> NS_YELLOW_LIGHT )
+		( RED_LIGHT <> YELLOW_LIGHT )
 		AND
-		( NS_YELLOW_LIGHT <> ON )
+		( YELLOW_LIGHT <> ON )
 	)
 
 	/**
 	 * Red and Green
 	 **/
 	assert(
-		( NS_RED_LIGHT <> NS_GREEN_LIGHT )
+		( RED_LIGHT <> GREEN_LIGHT )
 		AND
-		( NS_GREEN_LIGHT <> ON )
+		( GREEN_LIGHT <> ON )
 	)
 
 	/**
 	 * Yellow and Green
 	 **/
 	assert(
-		( NS_YELLOW_LIGHT <> NS_GREEN_LIGHT )
+		( YELLOW_LIGHT <> GREEN_LIGHT )
 		AND
-		( NS_GREEN_LIGHT <> ON )
+		( GREEN_LIGHT <> ON )
 	)
 
 }

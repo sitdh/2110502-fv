@@ -35,6 +35,10 @@ yellow:	NS_GREEN_LIGHT == ON ->
 active proctype AssertInvariant() 
 {
 	assert( 
-		(NS_RED_LIGHT == NS_GREEN_LIGHT) OR (NS_YELLOW_LIGHT == NS_GREEN_LIGHT) 
+		(NS_RED_LIGHT <> NS_GREEN_LIGHT) 
+		OR 
+		(NS_YELLOW_LIGHT <> NS_GREEN_LIGHT) 
+		OR 
+		(NS_RED_LIGHT <> NS_YELLOW_LIGHT) 
 	)
 }

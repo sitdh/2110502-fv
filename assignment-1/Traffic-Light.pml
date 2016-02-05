@@ -13,6 +13,8 @@ red:	NS_RED_LIGHT == ON ->
 				NS_YELLOW_LIGHT	= ON
 				NS_GREEN_LIGHT	= OFF
 			}
+			assert( NS_RED_LIGHT == OFF )
+			assert( NS_YELLOW_LIGHT == ON )
 			goto green;
 
 green: NS_YELLOW_LIGHT == ON ->
@@ -21,6 +23,8 @@ green: NS_YELLOW_LIGHT == ON ->
 				NS_YELLOW_LIGHT	= OFF
 				NS_GREEN_LIGHT	= ON
 			}
+			assert( NS_YELLOW_LIGHT == OFF )
+			assert( NS_GREEN_LIGHT == ON )
 			goto yellow;
 
 yellow:	NS_GREEN_LIGHT == ON ->
@@ -29,6 +33,8 @@ yellow:	NS_GREEN_LIGHT == ON ->
 				NS_YELLOW_LIGHT	= OFF
 				NS_GREEN_LIGHT	= OFF
 			}
+			assert( NS_GREEN_LIGHT == OFF )
+			assert( NS_RED_LIGHT == ON )
 			goto red;
 }
 

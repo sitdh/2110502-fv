@@ -32,7 +32,6 @@ active proctype pump_working()
 
 	assert(p)
 }
-**/
 
 active proctype timer() {
 	do
@@ -76,3 +75,77 @@ active proctype timer() {
 		printf("Hello");
 	od;
 }
+**/
+
+proctype pump() {
+pump_on: (ON == water_pump_status) ->
+		if 
+		:: (MAX_WATER_LEVEL > current_water_level) -> atomic { 
+			current_water_level++; 
+			current_water_temperature--;
+			goto pump_on;
+		}
+		:: (MAX_WATER_LEVEL == current_water_level) -> atomic {
+			water_pump_status = OFF;
+			goto pump_off;
+		}
+		fi;
+pump_off: (OFF == water_pump_status) ->
+		if
+		:: (MIN_WATER_LEVEL < current_water_level) -> atomic {
+			current_water_level--;
+			goto pump_off;
+		}
+		:: (MIN_WATER_LEVEL >= current_water_level) -> goto pump_on;
+		fi;
+}
+
+proctype heater() {
+heater_on: (ON == heat_plate_status) -> 
+	if
+	:: (MAX_TEMPERATURE_OF_HEAT_PLATE > current_water_temperature) -> atomic {
+			current_water_temperature++;
+			goto heater_on;
+		}
+	:: (MAX_TEMPERATURE_OF_HEAT_PLATE == current_water_temperature) -> atomic {
+			heat_plate_status = OFF;
+			goto heater_off;
+		}
+	fi;
+
+heater_off: (OFF == heat_plate_status) -> 
+	if
+	:: (MIN_TEMPERATURE_OF_HEAT_PLATE > current_water_temperature) -> atomic {
+			current_water_temperature--;
+			goto heater_off;
+		}
+	:: (MIN_TEMPERATURE_OF_HEAT_PLATE == current_water_temperature) -> atomic {
+			heat_plate_status = ON;
+			goto heater_on;
+		}
+	fi;
+}
+
+init {
+
+	run pump();
+	run heater();
+
+	/**
+	do
+	:: (MIN_WATER_LEVEL > current_water_level) -> 
+		water_pump_status = ON;
+		run pump();
+	:: (MAX_WATER_LEVEL == current_water_level) ->
+		water_pump_status = OFF;
+
+	:: (MIN_TEMPERATURE_OF_HEAT_PLATE > current_water_temperature) ->
+		heat_plate_status = ON;
+		run heater();
+	:: (MAX_TEMPERATURE_OF_HEAT_PLATE == current_water_temperature) ->
+		heat_plate_status = OFF;
+	od;
+	**/
+}
+
+

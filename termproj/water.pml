@@ -10,7 +10,7 @@
 #define p (water_temperature >= MIN_TEMPERATURE)
 #define q (water_temperature <= MAX_TEMPERATURE)
 
-ltl p1 { [](p||q) }
+int water_heater_system_status = OFF;
 
 int heater_system_status	= OFF;
 int pump_system_status		= OFF;
@@ -20,8 +20,7 @@ int water_temperature;
 
 chan heater_system = [0] of { int };
 
-proctype pump(chan heater_channel) {
-	heater_channel?pump_system_status
+active proctype pump(chan heater_channel) {
 
 	int flood_out = 0;
 
@@ -36,18 +35,16 @@ proctype pump(chan heater_channel) {
 		fi;
 	:: (OFF == pump_system_status) ->
 		if
-		:: (MIN_WATER <= water_level) -> atomic {
+		:: (MIN_WATER < water_level) -> atomic {
 			water_level--;
 		}
-		:: (MIN_WATER > water_level) ->
+		:: (MIN_WATER >= water_level) ->
 			pump_system_status = ON;
 		fi;
 	od;
 }
 
-proctype heater(chan heater_channel) {
-
-	heater_channel?heater_system_status
+active proctype heater() {
 
 	water_temperature = MIN_TEMPERATURE;
 
@@ -61,23 +58,28 @@ proctype heater(chan heater_channel) {
 		fi;
 	:: (OFF == heater_system_status) ->
 		if
-		:: (MIN_TEMPERATURE <= water_temperature) -> 
+		:: (MIN_TEMPERATURE < water_temperature - 1) ->
 			water_temperature--;
-		:: (MIN_TEMPERATURE > water_temperature) ->
+		:: (MIN_TEMPERATURE >= water_temperature) ->
 			heater_system_status = ON;
 		fi;
+	:: (MIN_TEMPERATURE >= water_temperature) -> 
+		water_temperature = MIN_TEMPERATURE;
 	od;
 }
 
 init {
-
-	run pump(heater_system);
-	run heater(heater_system);
-
-	heater_system!ON
+	water_heater_system_status = ON;
 }
 
-active proctype A() {
-	assert(water_temperature <= MAX_TEMPERATURE)
-	assert(!(water_temperature > MAX_TEMPERATURE))
+never  {    /* []<>p */
+T0_init:
+	do
+	:: ((p)) -> goto accept_S9
+	:: (1) -> goto T0_init
+	od;
+accept_S9:
+	do
+	:: (1) -> goto T0_init
+	od;
 }

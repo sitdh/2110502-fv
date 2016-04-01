@@ -1,11 +1,9 @@
-mtype { ON, OFF };
+#define ON  1
+#define OFF 0
 
-mtype water_heater_system	= OFF;
-mtype water_pump_status		= OFF;
-mtype heat_plate_status		= OFF;
-
-chan heat_plate_chann = [2] of {mtype};
-chan water_pump_chann = [2] of {mtype};
+int water_heater_system		= OFF;
+int water_pump_status		= OFF;
+int heat_plate_status		= OFF;
 
 #define MIN_WATER_LEVEL 3
 #define MAX_WATER_LEVEL 20
@@ -18,9 +16,9 @@ chan water_pump_chann = [2] of {mtype};
 
 int current_water_level = 0;
 
-#define p ( water_heater_system == ON )
-/**  -> <>(water_pump_status == ON) **/
+#define p (current_water_level <= MAX_WATER_LEVEL);
 
+/**
 active proctype pump_working() 
 {
 	do
@@ -32,4 +30,34 @@ active proctype pump_working()
 	od;
 
 	assert(p)
+}
+**/
+
+active proctype timer() {
+	if
+	:: (ON == water_pump_status) ->
+		if 
+		:: (MAX_WATER_LEVEL > current_water_level) -> atomic {
+			current_water_level++; /** = current_water_level + 1; **/
+			printf("ON: %d\n", current_water_level);
+		}
+		fi;
+	:: (OFF == water_pump_status) ->
+		if
+		:: (MAX_WATER_LEVEL > current_water_level) -> atomic {
+			current_water_level--;
+			printf("OFF: Decrease %d\n", current_water_level);
+		}
+		fi;
+	fi;
+}
+
+init 
+{
+
+	water_pump_status = ON;
+	do 
+	:: (MAX_WATER_LEVEL == current_water_level) -> water_pump_status = OFF;
+	:: (MIN_WATER_LEVEL <= current_water_level) -> water_pump_status = ON;
+	od
 }

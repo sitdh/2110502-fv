@@ -8,6 +8,9 @@
 #define MAX_WATER 500
 
 #define p (water_temperature >= MIN_TEMPERATURE)
+#define q (water_temperature <= MAX_TEMPERATURE)
+
+ltl p1 { [](p||q) }
 
 int heater_system_status	= OFF;
 int pump_system_status		= OFF;
@@ -72,7 +75,9 @@ init {
 	run heater(heater_system);
 
 	heater_system!ON
-
 }
 
-ltl { [](!p) }
+active proctype A() {
+	assert(water_temperature <= MAX_TEMPERATURE)
+	assert(!(water_temperature > MAX_TEMPERATURE))
+}

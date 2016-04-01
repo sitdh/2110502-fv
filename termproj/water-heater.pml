@@ -15,6 +15,7 @@ int heat_plate_status		= OFF;
 #define TEMPERATURE_INCREASE_RATE 1
 
 int current_water_level = 0;
+int current_water_temperature = 25;
 
 #define p (current_water_level <= MAX_WATER_LEVEL);
 
@@ -34,30 +35,44 @@ active proctype pump_working()
 **/
 
 active proctype timer() {
-	if
-	:: (ON == water_pump_status) ->
-		if 
-		:: (MAX_WATER_LEVEL > current_water_level) -> atomic {
-			current_water_level++; /** = current_water_level + 1; **/
-			printf("ON: %d\n", current_water_level);
-		}
-		fi;
-	:: (OFF == water_pump_status) ->
+	do
+	:: (OFF == water_heater_system) -> water_heater_system = ON;
+	:: (ON == water_heater_system) ->
 		if
-		:: (MAX_WATER_LEVEL > current_water_level) -> atomic {
-			current_water_level--;
-			printf("OFF: Decrease %d\n", current_water_level);
-		}
+		:: (ON == water_pump_status) ->
+			if 
+			:: (MAX_WATER_LEVEL > current_water_level) -> atomic { 
+				current_water_level++; 
+				current_water_temperature = current_water_temperature - 1;
+			}
+			:: (MAX_WATER_LEVEL == current_water_level) -> water_pump_status = OFF;
+			fi;
+		:: (OFF == water_pump_status) ->
+			if
+			:: (MIN_WATER_LEVEL < current_water_level) -> current_water_level--;
+			:: (MIN_WATER_LEVEL >= current_water_level) -> water_pump_status = ON;
+			fi;
 		fi;
-	fi;
-}
 
-init 
-{
+		if
+		:: (ON == heat_plate_status) -> 
+			if
+			:: (MAX_TEMPERATURE_OF_HEAT_PLATE > current_water_temperature) -> 
+				current_water_temperature++;
+			:: (MAX_TEMPERATURE_OF_HEAT_PLATE == current_water_temperature) -> 
+				heat_plate_status = OFF;
+			fi;
+		:: (OFF == heat_plate_status) -> 
+			if
+			:: (MIN_TEMPERATURE_OF_HEAT_PLATE > current_water_temperature) -> 
+				current_water_temperature = current_water_temperature + 1;
+				current_water_temperature++;
+			:: (MIN_TEMPERATURE_OF_HEAT_PLATE == current_water_temperature) -> 
+				current_water_temperature--;
+				heat_plate_status = OFF;
+			fi;
+		fi;
 
-	water_pump_status = ON;
-	do 
-	:: (MAX_WATER_LEVEL == current_water_level) -> water_pump_status = OFF;
-	:: (MIN_WATER_LEVEL <= current_water_level) -> water_pump_status = ON;
-	od
+		printf("Hello");
+	od;
 }

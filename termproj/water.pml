@@ -10,6 +10,9 @@
 #define p (water_temperature >= MIN_TEMPERATURE)
 #define q (water_temperature <= MAX_TEMPERATURE)
 
+ltl { []p }
+ltl { []q }
+
 int water_heater_system_status = OFF;
 
 int heater_system_status	= OFF;
@@ -70,16 +73,4 @@ active proctype heater() {
 
 init {
 	water_heater_system_status = ON;
-}
-
-never  {    /* []<>p */
-T0_init:
-	do
-	:: ((p)) -> goto accept_S9
-	:: (1) -> goto T0_init
-	od;
-accept_S9:
-	do
-	:: (1) -> goto T0_init
-	od;
 }

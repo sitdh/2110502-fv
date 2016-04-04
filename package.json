@@ -1,0 +1,15 @@
+{
+  "name": "water-heater",
+  "version": "1.0.0",
+  "description": "Water boiling system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+	  "type": "git",
+	  "url": "git@github.com:sitdh/2110502-fv.git"
+  },
+  "author": "Sitdhibong Laokok",
+  "license": "MIT"
+}

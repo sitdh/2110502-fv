@@ -14,12 +14,21 @@
 #define p2 (water_level >= 0)
 #define p3 (water_level >= MIN_WATER)
 #define q2 (water_level <= MAX_WATER)
+#define q3 (pump_system_status == ON)
 
+#define q4 (water_level == MAX_WATER)
+
+ltl { <>q4 }
+/**
 ltl { []p1 }
 ltl { []q1 }
 
+ltl { [](!p3 -> <>q3) }
+
 ltl { [](p2 -> <>p3) }
 ltl { []q2 }
+ltl { [](!p1) }
+**/
 
 int water_heater_system_status	= OFF;
 
@@ -29,64 +38,39 @@ int pump_system_status			= OFF;
 int water_level					= 0;
 int water_temperature			= MIN_TEMPERATURE;
 
-
 active proctype pump() {
-
-	int flood_out = 0;
-
+	endPump:
 	do 
 	:: (ON == pump_system_status) ->
 		if
-		:: (MAX_WATER > water_level) -> d_step {
-			water_level++;
-		}
-		:: (MAX_WATER == water_level) ->
-			pump_system_status = OFF;
+		:: (water_level <  MAX_WATER) -> water_level = water_level + 1;
+		:: (water_level >= MAX_WATER) -> pump_system_status = OFF;
 		fi;
 	:: (OFF == pump_system_status) ->
 		if
-		:: (MIN_WATER < water_level) -> d_step {
-			water_level--;
-		}
-		:: (MIN_WATER >= water_level) ->
-			pump_system_status = ON;
+		:: (MIN_WATER < water_level) -> water_level = water_level - 1;
+		:: (MIN_WATER >= water_level) -> pump_system_status = ON;
 		fi;
 	od;
 }
 
 active proctype heater() {
-
-	water_temperature = MIN_TEMPERATURE;
-
+	endHeater:
 	do 
 	:: (ON == heater_system_status) ->
 		if
-		:: (MAX_TEMPERATURE > water_temperature) -> 
-			water_temperature++;
-		:: (MAX_TEMPERATURE == water_temperature) ->
-			heater_system_status = OFF;
+		:: (MAX_TEMPERATURE > water_temperature) -> water_temperature++;
+		:: (MAX_TEMPERATURE == water_temperature) -> heater_system_status = OFF;
 		fi;
 	:: (OFF == heater_system_status) ->
 		if
-		:: (MIN_TEMPERATURE < water_temperature - 1) ->
-			water_temperature--;
-		:: (MIN_TEMPERATURE >= water_temperature) ->
+		:: (MIN_TEMPERATURE < water_temperature) -> water_temperature--;
+		:: ((MIN_TEMPERATURE >= water_temperature) && (MIN_WATER <= water_level)) -> 
 			heater_system_status = ON;
 		fi;
-	:: (MIN_TEMPERATURE >= water_temperature) -> 
-		water_temperature = MIN_TEMPERATURE;
 	od;
 }
 
 init {
 	water_heater_system_status = ON;
 }
-
-never  {    /* [](!p1) */
-accept_init:
-T0_init:
-	do
-			:: ((!p1)) -> goto T0_init
-				od;
-}
-

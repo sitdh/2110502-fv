@@ -19,8 +19,9 @@
 #define q4 (water_level == MAX_WATER)
 
 ltl { <>q4 }
-/**
+
 ltl { []p1 }
+/**
 ltl { []q1 }
 
 ltl { [](!p3 -> <>q3) }

@@ -1,6 +1,6 @@
 *.class
 .DS_Store
-pan.*
+pan*
 *.trail
 *.tmp
 

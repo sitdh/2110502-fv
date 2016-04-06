@@ -70,7 +70,8 @@ ltl { [](q4 -> <>q2_1) }
 ltl { (q4 && p2_1) -> q3 }
 ltl { o1 -> <>o2 }
 ltl { <>[]o2 }
-ltl { [](o1 -> <>(q4 && p4) }
+ltl { [](o2 -> <>(q4 && p4)) }
+ltl { [](o1 -> [](q3 && p5)) }
 
 /**
  * Abstraction
@@ -79,16 +80,13 @@ active proctype pump() {
 	do 
 	:: (ON == pump_system_status) ->
 		if
-		:: (water_level <  MAX_WATER) -> atomic { 
-			water_level++;
-			printf("water: %d", water_level);
-		}
-		:: (water_level >= MAX_WATER) -> pump_system_status = OFF;
+		:: (water_level <  MAX_WATER) -> water_level++
+		:: (water_level >= MAX_WATER) -> pump_system_status = OFF
 		fi;
 	:: (OFF == pump_system_status) ->
 		if
-		:: (water_level >  MIN_WATER) -> water_level--;
-		:: (water_level <= MIN_WATER) -> pump_system_status = ON;
+		:: (water_level >  MIN_WATER) -> water_level--
+		:: (water_level <= MIN_WATER) -> pump_system_status = ON
 		fi;
 	od;
 }
@@ -99,15 +97,18 @@ active proctype heater() {
 		do 
 		:: (ON == heater_system_status) ->
 			if
-			:: (water_temperature <  MAX_TEMPERATURE) -> water_temperature++;
-			:: (water_temperature >= MAX_TEMPERATURE) -> heater_system_status = OFF;
+			:: (water_temperature <  MAX_TEMPERATURE) -> 
+				water_temperature++
+			:: (water_temperature >= MAX_TEMPERATURE) -> 
+				heater_system_status = OFF
 			fi;
 		:: (OFF == heater_system_status) ->
 			if
-			:: (MIN_WATER == water_level) -> skip;
-			:: (water_temperature > MIN_TEMPERATURE) -> water_temperature--;
+			:: (MIN_WATER == water_level) -> skip
+			:: (water_temperature > MIN_TEMPERATURE) -> 
+				water_temperature--
 			:: ((MIN_TEMPERATURE == water_temperature) && (MIN_WATER >= water_level)) -> 
-				heater_system_status = ON;
+				heater_system_status = ON
 			fi;
 		od;
 	fi;
@@ -115,7 +116,6 @@ active proctype heater() {
 
 init {
 	if 
-	:: (OFF == water_heater_system) ->
-		water_heater_system = ON
+	:: (OFF == water_heater_system) -> water_heater_system = ON
 	fi;
 }

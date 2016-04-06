@@ -1,8 +1,3 @@
-/**
-#define on	1
-#define off 0
-**/
-
 mtype = { ON, OFF }
 
 #define MIN_TEMPERATURE 25
@@ -25,7 +20,7 @@ int water_temperature				= MIN_TEMPERATURE
 #define o2   (water_heater_system == ON)
 
 //--
-// water
+// Water level
 #define p1   (water_level >= 0)
 #define p2   (water_level >= MIN_WATER)
 #define p2_1 (water_level == MIN_WATER)
@@ -35,7 +30,7 @@ int water_temperature				= MIN_TEMPERATURE
 #define p5   (pump_system_status == OFF)
 
 //--
-// temperture
+// Water temperture
 #define q1   (water_temperature >= MIN_TEMPERATURE)
 #define q1_1 (water_temperature == MIN_TEMPERATURE)
 #define q2   (water_temperature <= MAX_TEMPERATURE)

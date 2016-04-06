@@ -11,40 +11,49 @@ mtype = { ON, OFF }
 #define MIN_WATER 5 
 #define MAX_WATER 20
 
-mtype pump_system_status			= OFF;
-mtype heater_system_status			= OFF;
+mtype water_heater_system			= OFF
+mtype pump_system_status			= OFF
+mtype heater_system_status			= OFF
 
 int water_level						= 0
 int water_temperature				= MIN_TEMPERATURE
 
 /** ltl declaration **/
-// /** - water - **/
-// #define p1 (water_level >= 0)
-// #define p2 (water_level >= MIN_WATER)
-// #define p3 (water_level <= MAX_WATER)
-// #define p4 (pump_system_status == ON)
-// #define p5 (pump_system_status == OFF)
+/** - water - **/
+#define p1   (water_level >= 0)
+#define p2   (water_level >= MIN_WATER)
+#define p2_1 (water_level == MIN_WATER)
+#define p3   (water_level <= MAX_WATER)
+#define p3_1 (water_level == MAX_WATER)
+#define p4   (pump_system_status == ON)
+#define p5   (pump_system_status == OFF)
 
-#define q1 (water_temperature >= MIN_TEMPERATURE)
-#define q2 (water_temperature <= MAX_TEMPERATURE)
-#define q3 (heater_system_status == OFF)
-#define q4 (heater_system_status == ON)
+#define q1   (water_temperature >= MIN_TEMPERATURE)
+#define q1_1 (water_temperature == MIN_TEMPERATURE)
+#define q2   (water_temperature <= MAX_TEMPERATURE)
+#define q2_1 (water_temperature == MAX_TEMPERATURE)
+#define q3   (heater_system_status == OFF)
+#define q4   (heater_system_status == ON)
 
-// 
-// /** ltl: water level **/
-// ltl { []p1 }
-// ltl { []<>p2 }
-// ltl { []<>p3 }
-// ltl { []<>p4 }
-// ltl { p4-><>p5 }
-// ltl { p5-><>p4 }
+/** ltl: water level **/
+ltl { []p1 }
+ltl { []<>p2 }
+ltl { []<>p3 }
+ltl { []<>p4 }
+ltl { p4-><>p5 }
+ltl { p5-><>p4 }
 
 // /** - temperature - **/
 ltl { []<>q1 }
 ltl { []<>q2 }
-// ltl { q3 -> <>q4 }
-// ltl { []<>(q3 -> <>q4) }
-// ltl { []<>(q4 -> <>q3) }
+ltl { q3 -> <>q4 }
+ltl { []<>(q3 -> <>q4) }
+ltl { []<>(q4 -> <>q3) }
+
+/** - Extra - **/
+ltl { [](q3 -> <>q1_1) }
+ltl { [](q4 -> <>q2_1) }
+ltl { (q4 && p2_1) -> q3 }
 
 active proctype pump() {
 	do 
@@ -65,17 +74,28 @@ active proctype pump() {
 }
 
 active proctype heater() {
-	do 
-	:: (ON == heater_system_status) ->
-		if
-		:: (water_temperature <  MAX_TEMPERATURE) -> water_temperature++;
-		:: (water_temperature >= MAX_TEMPERATURE) -> heater_system_status = OFF;
-		fi;
-	:: (OFF == heater_system_status) ->
-		if
-		:: (MIN_TEMPERATURE < water_temperature) -> water_temperature--;
-		:: ((MIN_TEMPERATURE == water_temperature) && (MIN_WATER >= water_level)) -> 
-			heater_system_status = ON;
-		fi;
-	od;
+	if
+	:: (ON == water_heater_system) ->
+		do 
+		:: (ON == heater_system_status) ->
+			if
+			:: (water_temperature <  MAX_TEMPERATURE) -> water_temperature++;
+			:: (water_temperature >= MAX_TEMPERATURE) -> heater_system_status = OFF;
+			fi;
+		:: (OFF == heater_system_status) ->
+			if
+			:: (MIN_WATER == water_level) -> skip;
+			:: (water_temperature > MIN_TEMPERATURE) -> water_temperature--;
+			:: ((MIN_TEMPERATURE == water_temperature) && (MIN_WATER >= water_level)) -> 
+				heater_system_status = ON;
+			fi;
+		od;
+	fi;
+}
+
+init {
+	if 
+	:: (OFF == water_heater_system) ->
+		water_heater_system = ON
+	fi;
 }

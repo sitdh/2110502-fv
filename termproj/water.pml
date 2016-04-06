@@ -18,8 +18,14 @@ mtype heater_system_status			= OFF
 int water_level						= 0
 int water_temperature				= MIN_TEMPERATURE
 
-/** ltl declaration **/
-/** - water - **/
+/** 
+ * Atomic property 
+ **/
+#define o1   (water_heater_system == OFF)
+#define o2   (water_heater_system == ON)
+
+//--
+// water
 #define p1   (water_level >= 0)
 #define p2   (water_level >= MIN_WATER)
 #define p2_1 (water_level == MIN_WATER)
@@ -28,6 +34,8 @@ int water_temperature				= MIN_TEMPERATURE
 #define p4   (pump_system_status == ON)
 #define p5   (pump_system_status == OFF)
 
+//--
+// temperture
 #define q1   (water_temperature >= MIN_TEMPERATURE)
 #define q1_1 (water_temperature == MIN_TEMPERATURE)
 #define q2   (water_temperature <= MAX_TEMPERATURE)
@@ -35,7 +43,11 @@ int water_temperature				= MIN_TEMPERATURE
 #define q3   (heater_system_status == OFF)
 #define q4   (heater_system_status == ON)
 
-/** ltl: water level **/
+/** 
+ * LTL
+ **/
+//--
+// water
 ltl { []p1 }
 ltl { []<>p2 }
 ltl { []<>p3 }
@@ -43,18 +55,26 @@ ltl { []<>p4 }
 ltl { p4-><>p5 }
 ltl { p5-><>p4 }
 
-// /** - temperature - **/
+//--
+// temperature
 ltl { []<>q1 }
 ltl { []<>q2 }
 ltl { q3 -> <>q4 }
 ltl { []<>(q3 -> <>q4) }
 ltl { []<>(q4 -> <>q3) }
 
-/** - Extra - **/
+//--
+// Extra
 ltl { [](q3 -> <>q1_1) }
 ltl { [](q4 -> <>q2_1) }
 ltl { (q4 && p2_1) -> q3 }
+ltl { o1 -> <>o2 }
+ltl { <>[]o2 }
+ltl { [](o1 -> <>(q4 && p4) }
 
+/**
+ * Abstraction
+ **/
 active proctype pump() {
 	do 
 	:: (ON == pump_system_status) ->

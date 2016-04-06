@@ -6,7 +6,7 @@
 mtype = { ON, OFF }
 
 #define MIN_TEMPERATURE 25
-#define MAX_TEMPERATURE 100
+#define MAX_TEMPERATURE 60
 
 #define MIN_WATER 5 
 #define MAX_WATER 20
@@ -18,8 +18,15 @@ mtype = { ON, OFF }
 // #define p3 (water_level <= MAX_WATER)
 // #define p4 (pump_system_status == ON)
 // #define p5 (pump_system_status == OFF)
+
+#define q1 (water_temperature >= MIN_TEMPERATURE)
+#define q2 (water_temperature <= MAX_TEMPERATURE)
+#define q3 (water_temperature <= MAX_TEMPERATURE)
+#define q4 (heater_system_status == OFF)
+#define q5 (heater_system_status == ON)
+
 // 
-// /** LTL **/
+// /** LTL: Water Level **/
 // ltl { []p1 }
 // ltl { []<>p2 }
 // ltl { []<>p3 }
@@ -41,8 +48,8 @@ ltl { [](!p1) }
 
 mtype water_heater_system_status	= OFF;
 
-mtype heater_system_status			= OFF;
 mtype pump_system_status			= OFF;
+mtype heater_system_status			= OFF;
 
 int water_level						= 0;
 int water_temperature				= MIN_TEMPERATURE;

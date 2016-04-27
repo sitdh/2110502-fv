@@ -53,8 +53,8 @@ ltl { p5-><>p4 }
 //--
 // temperature
 ltl { [](q1 && q2) }
+ltl { []<>q1_1 }
 ltl { []<>q2_1 }
-ltl { []<>q3_1 }
 ltl { q3 -> <>q4 }
 ltl { []<>(q3 -> <>q4) }
 ltl { []<>(q4 -> <>q3) }
@@ -91,7 +91,7 @@ active proctype pump() {
 }
 
 active proctype heater() {
-	if
+endHeater: if
 	:: (ON == water_heater_system) ->
 		do 
 		:: (ON == heater_system_status) ->
